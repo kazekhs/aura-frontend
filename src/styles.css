@@ -1,0 +1,395 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+@import "tailwindcss" source(none);
+@import "tw-animate-css";
+@import "leaflet/dist/leaflet.css";
+@source "../src";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * AURA Design System — Kota Hijau
+ * Palet: Forest, Lime, Sage, Cream, Sky. Bentuk: pill & kartu super-membulat.
+ * Font: Plus Jakarta Sans. Ikon: Lucide (stroke 1.75).
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-glow: var(--primary-glow);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-info: var(--info);
+  --color-urgency-low: var(--urgency-low);
+  --color-urgency-medium: var(--urgency-medium);
+  --color-urgency-high: var(--urgency-high);
+  --color-urgency-critical: var(--urgency-critical);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-orange: var(--orange);
+  --color-forest: var(--forest);
+  --color-forest-soft: var(--forest-soft);
+  --color-lime: var(--lime);
+  --color-sage: var(--sage);
+  --color-sage-soft: var(--sage-soft);
+  --color-cream: var(--cream);
+  --color-sky: var(--sky);
+  --color-sky-deep: var(--sky-deep);
+  --color-field: var(--field);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --font-display: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+/* AURA — Hijau kota. Forest #0F2E22 · Lime #C5E04B · Sage #D9E8C2 · Cream #F3EAD3 */
+:root {
+  --radius: 1rem;
+
+  --forest: #0f2e22;
+  --forest-soft: #1f4d36;
+  --lime: #c5e04b;
+  --sage: #d9e8c2;
+  --sage-soft: #f1f6e8;
+  --cream: #f3ead3;
+  --sky: #bfe3f2;
+  --sky-deep: #7cc4e3;
+
+  --background: #ffffff;
+  --foreground: #14201a;
+
+  --card: #ffffff;
+  --card-foreground: #14201a;
+  --popover: #ffffff;
+  --popover-foreground: #14201a;
+
+  --primary: #c5e04b;
+  --primary-foreground: #0f2e22;
+  --primary-glow: #d6ec73;
+
+  --secondary: #f1f6e8;
+  --secondary-foreground: #0f2e22;
+
+  --muted: #f1f6e8;
+  --muted-foreground: #5b6b62;
+
+  --accent: #d9e8c2;
+  --accent-foreground: #0f2e22;
+
+  --destructive: #d64545;
+  --destructive-foreground: #ffffff;
+  --warning: #f2a93b;
+  --warning-foreground: #6b4300;
+  --success: #2f9e5b;
+  --success-foreground: #ffffff;
+  --info: #3b82c4;
+  --orange: #e8752f;
+
+  /* Urgensi */
+  --urgency-low: #9db88a;
+  --urgency-medium: #f2c23b;
+  --urgency-high: #e8752f;
+  --urgency-critical: #d64545;
+
+  /* Teks */
+  --ink: #14201a;
+  --ink-soft: #5b6b62;
+
+  --border: #e3ebd6;
+  --input: #d9cfae;
+  --field: #f3ead3;
+  --ring: #c5e04b;
+
+  --chart-1: #c5e04b;
+  --chart-2: #1f4d36;
+  --chart-3: #e8752f;
+  --chart-4: #3b82c4;
+  --chart-5: #d64545;
+
+  --sidebar: #0f2e22;
+  --sidebar-foreground: #f1f6e8;
+  --sidebar-primary: #c5e04b;
+  --sidebar-primary-foreground: #0f2e22;
+  --sidebar-accent: #1f4d36;
+  --sidebar-accent-foreground: #f1f6e8;
+  --sidebar-border: #1f4d36;
+  --sidebar-ring: #c5e04b;
+
+  --gradient-hero: #0f2e22;
+  --gradient-leaf: #c5e04b;
+  --gradient-warm: #f1f6e8;
+  --shadow-soft: 0 12px 32px -8px rgb(15 46 34 / 0.10);
+  --shadow-elev: 0 20px 48px -12px rgb(15 46 34 / 0.18);
+  --shadow-glow: 0 0 0 3px rgb(197 224 75 / 0.55);
+}
+
+.dark {
+  --background: #0f2e22;
+  --foreground: #f1f6e8;
+  --card: #163a2b;
+  --card-foreground: #f1f6e8;
+  --popover: #163a2b;
+  --popover-foreground: #f1f6e8;
+  --primary: #c5e04b;
+  --primary-foreground: #0f2e22;
+  --primary-glow: #d6ec73;
+  --secondary: #1f4d36;
+  --secondary-foreground: #f1f6e8;
+  --muted: #1b4430;
+  --muted-foreground: #b4c4b8;
+  --accent: #1f4d36;
+  --accent-foreground: #f1f6e8;
+  --destructive: #ef6a6a;
+  --destructive-foreground: #0f2e22;
+  --warning: #f5b95a;
+  --warning-foreground: #f5d9a3;
+  --success: #4cc27c;
+  --success-foreground: #0f2e22;
+  --info: #6aa7e0;
+  --orange: #f08a4b;
+  --border: rgb(241 246 232 / 0.14);
+  --input: rgb(241 246 232 / 0.22);
+  --field: #1b4430;
+  --ring: #c5e04b;
+  --sidebar: #0a2118;
+  --shadow-elev: 0 20px 48px -12px rgb(0 0 0 / 0.5);
+}
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html { font-family: var(--font-sans); }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-size: 16px;
+    line-height: 26px;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    font-weight: 800;
+  }
+  :focus-visible { outline: 2px solid var(--color-lime); outline-offset: 2px; }
+}
+
+@layer utilities {
+  .bg-hero-gradient { background-color: var(--gradient-hero); }
+  .bg-leaf-gradient { background-color: var(--gradient-leaf); }
+  .bg-warm-gradient { background-color: var(--gradient-warm); }
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-elev { box-shadow: var(--shadow-elev); }
+  .shadow-glow { box-shadow: var(--shadow-glow); }
+  .text-balance { text-wrap: balance; }
+  .grain { position: relative; isolation: isolate; }
+  .marquee-fade {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  }
+  .ring-soft { box-shadow: 0 0 0 1px rgb(15 46 34 / 0.10); }
+
+}
+
+/* Pembatas gelombang organik & kartu putus-putus */
+@layer utilities {
+  .wave-top {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 40' preserveAspectRatio='none'%3E%3Cpath d='M0 40V18C120 0 240 0 360 14s240 22 360 12 240-26 360-24 240 14 360 22V40z'/%3E%3C/svg%3E"), linear-gradient(#000 0 0);
+    -webkit-mask-size: 100% 40px, 100% calc(100% - 39px);
+    -webkit-mask-position: top, bottom;
+    -webkit-mask-repeat: no-repeat;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 40' preserveAspectRatio='none'%3E%3Cpath d='M0 40V18C120 0 240 0 360 14s240 22 360 12 240-26 360-24 240 14 360 22V40z'/%3E%3C/svg%3E"), linear-gradient(#000 0 0);
+    mask-size: 100% 40px, 100% calc(100% - 39px);
+    mask-position: top, bottom;
+    mask-repeat: no-repeat;
+  }
+  .card-dashed {
+    background: var(--color-cream);
+    border: 1.5px dashed color-mix(in oklab, var(--color-forest-soft) 40%, transparent);
+    border-radius: var(--radius-3xl);
+  }
+}
+
+/* Leaflet tweaks */
+.leaflet-container { font-family: var(--font-sans); border-radius: var(--radius); }
+.leaflet-popup-content-wrapper { border-radius: var(--radius-xl); }
+
+/* Premium Custom Animations & Keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatSlow1 {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(1deg);
+  }
+}
+
+@keyframes floatSlow2 {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(12px) rotate(-1.5deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.25;
+    transform: translate3d(0, 0, 0) scale(0.95);
+  }
+  50% {
+    opacity: 0.4;
+    transform: translate3d(0, 0, 0) scale(1.12);
+  }
+}
+
+@keyframes marqueeScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes cameraScan {
+  0%, 100% {
+    top: 0%;
+  }
+  50% {
+    top: 100%;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+  .animate-float-1 {
+    animation: floatSlow1 6s ease-in-out infinite;
+  }
+  .animate-float-2 {
+    animation: floatSlow2 7s ease-in-out infinite;
+  }
+  .animate-pulse-glow {
+    animation: pulseGlow 8s ease-in-out infinite;
+  }
+  .animate-marquee {
+    display: inline-flex;
+    animation: marqueeScroll 25s linear infinite;
+  }
+  .animate-gradient-shift {
+    background-size: 200% 200%;
+    animation: gradientShift 10s ease infinite;
+  }
+  .animate-scan {
+    animation: cameraScan 4s ease-in-out infinite;
+  }
+
+  .will-change-gpu {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .animation-delay-100 { animation-delay: 100ms; }
+  .animation-delay-200 { animation-delay: 200ms; }
+  .animation-delay-300 { animation-delay: 300ms; }
+  .animation-delay-400 { animation-delay: 400ms; }
+  .animation-delay-500 { animation-delay: 500ms; }
+  .animation-delay-700 { animation-delay: 700ms; }
+}
+
+/* Skala tipografi: H1 56/60 · H2 40/46 · H3 24/30 · stat 48–64 */
+@layer utilities {
+  .t-h1 { font-size: 2.5rem; line-height: 1.1; font-weight: 800; letter-spacing: -0.025em; }
+  .t-h2 { font-size: 2rem; line-height: 1.15; font-weight: 700; letter-spacing: -0.02em; }
+  .t-h3 { font-size: 1.5rem; line-height: 1.25; font-weight: 700; letter-spacing: -0.015em; }
+  .t-stat { font-size: 3rem; line-height: 1; font-weight: 800; letter-spacing: -0.02em; }
+  .t-caption { font-size: 13px; line-height: 18px; font-weight: 500; }
+  @media (min-width: 768px) {
+    .t-h1 { font-size: 3.5rem; line-height: 60px; }
+    .t-h2 { font-size: 2.5rem; line-height: 46px; }
+    .t-stat { font-size: 4rem; }
+  }
+
+  /* Bahasa bentuk */
+  .card-cream { background: var(--color-cream); border: 1.5px dashed color-mix(in oklab, var(--color-forest-soft) 40%, transparent); border-radius: 28px; }
+  .card-white { background: var(--color-card); border: 1px solid color-mix(in oklab, var(--color-sage) 70%, transparent); border-radius: 28px; box-shadow: var(--shadow-soft); }
+  .shadow-soft-lg { box-shadow: 0 12px 32px rgb(15 46 34 / 0.08); }
+
+  /* Pembatas section: tepi sobek (zig-zag organik) di bawah hero */
+  .torn-edge {
+    height: 34px;
+    background: var(--color-background);
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 34' preserveAspectRatio='none'%3E%3Cpath d='M0 34V22L36 28 84 14 130 24 182 8 236 22 282 12 340 26 392 10 446 24 498 6 552 20 604 12 662 26 716 8 770 22 822 12 878 26 930 10 986 24 1040 8 1096 22 1148 12 1206 26 1258 10 1312 24 1364 12 1404 24 1440 16V34z'/%3E%3C/svg%3E");
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 34' preserveAspectRatio='none'%3E%3Cpath d='M0 34V22L36 28 84 14 130 24 182 8 236 22 282 12 340 26 392 10 446 24 498 6 552 20 604 12 662 26 716 8 770 22 822 12 878 26 930 10 986 24 1040 8 1096 22 1148 12 1206 26 1258 10 1312 24 1364 12 1404 24 1440 16V34z'/%3E%3C/svg%3E");
+    -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  }
+  .scrollbar-none { scrollbar-width: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+}
+
+/* Hormati preferensi kurangi gerak */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
