@@ -9,30 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TentangRouteImport } from './routes/tentang'
-import { Route as FiturRouteImport } from './routes/fitur'
-import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthSignupRouteImport } from './routes/auth.signup'
-import { Route as AuthLoginRouteImport } from './routes/auth.login'
-import { Route as AppWargaRouteImport } from './routes/_app.warga'
-import { Route as AppPetugasRouteImport } from './routes/_app.petugas'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as FiturRouteImport } from './routes/fitur'
+import { Route as TentangRouteImport } from './routes/tentang'
 import { Route as AppAdminRouteImport } from './routes/_app.admin'
-import { Route as AppPetugasIndexRouteImport } from './routes/_app.petugas.index'
+import { Route as AppPetugasRouteImport } from './routes/_app.petugas'
+import { Route as AppWargaRouteImport } from './routes/_app.warga'
+import { Route as AuthLoginRouteImport } from './routes/auth.login'
+import { Route as AuthSignupRouteImport } from './routes/auth.signup'
 import { Route as AppAdminIndexRouteImport } from './routes/_app.admin.index'
-import { Route as AppPetugasProfileRouteImport } from './routes/_app.petugas.profile'
-import { Route as AppAdminUsersRouteImport } from './routes/_app.admin.users'
-import { Route as AppAdminSettingsRouteImport } from './routes/_app.admin.settings'
-import { Route as AppAdminRoadsRouteImport } from './routes/_app.admin.roads'
-import { Route as AppAdminReportsRouteImport } from './routes/_app.admin.reports'
-import { Route as AppAdminProfileRouteImport } from './routes/_app.admin.profile'
 import { Route as AppAdminPetugasRouteImport } from './routes/_app.admin.petugas'
+import { Route as AppAdminProfileRouteImport } from './routes/_app.admin.profile'
+import { Route as AppAdminReportsRouteImport } from './routes/_app.admin.reports'
+import { Route as AppAdminRoadsRouteImport } from './routes/_app.admin.roads'
+import { Route as AppAdminSettingsRouteImport } from './routes/_app.admin.settings'
+import { Route as AppAdminUsersRouteImport } from './routes/_app.admin.users'
+import { Route as AppPetugasIndexRouteImport } from './routes/_app.petugas.index'
+import { Route as AppPetugasProfileRouteImport } from './routes/_app.petugas.profile'
 import { Route as AppAdminReportsIndexRouteImport } from './routes/_app.admin.reports.index'
 import { Route as AppAdminReportsIdRouteImport } from './routes/_app.admin.reports.$id'
 
-const TentangRoute = TentangRouteImport.update({
-  id: '/tentang',
-  path: '/tentang',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FiturRoute = FiturRouteImport.update({
@@ -40,28 +44,14 @@ const FiturRoute = FiturRouteImport.update({
   path: '/fitur',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
+const TentangRoute = TentangRouteImport.update({
+  id: '/tentang',
+  path: '/tentang',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthSignupRoute = AuthSignupRouteImport.update({
-  id: '/auth/signup',
-  path: '/auth/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthLoginRoute = AuthLoginRouteImport.update({
-  id: '/auth/login',
-  path: '/auth/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppWargaRoute = AppWargaRouteImport.update({
-  id: '/warga',
-  path: '/warga',
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPetugasRoute = AppPetugasRouteImport.update({
@@ -69,44 +59,29 @@ const AppPetugasRoute = AppPetugasRouteImport.update({
   path: '/petugas',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAdminRoute = AppAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const AppWargaRoute = AppWargaRouteImport.update({
+  id: '/warga',
+  path: '/warga',
   getParentRoute: () => AppRoute,
 } as any)
-const AppPetugasIndexRoute = AppPetugasIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppPetugasRoute,
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthSignupRoute = AuthSignupRouteImport.update({
+  id: '/auth/signup',
+  path: '/auth/signup',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppAdminRoute,
 } as any)
-const AppPetugasProfileRoute = AppPetugasProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AppPetugasRoute,
-} as any)
-const AppAdminUsersRoute = AppAdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AppAdminRoute,
-} as any)
-const AppAdminSettingsRoute = AppAdminSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppAdminRoute,
-} as any)
-const AppAdminRoadsRoute = AppAdminRoadsRouteImport.update({
-  id: '/roads',
-  path: '/roads',
-  getParentRoute: () => AppAdminRoute,
-} as any)
-const AppAdminReportsRoute = AppAdminReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
+const AppAdminPetugasRoute = AppAdminPetugasRouteImport.update({
+  id: '/petugas',
+  path: '/petugas',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminProfileRoute = AppAdminProfileRouteImport.update({
@@ -114,10 +89,35 @@ const AppAdminProfileRoute = AppAdminProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AppAdminRoute,
 } as any)
-const AppAdminPetugasRoute = AppAdminPetugasRouteImport.update({
-  id: '/petugas',
-  path: '/petugas',
+const AppAdminReportsRoute = AppAdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminRoadsRoute = AppAdminRoadsRouteImport.update({
+  id: '/roads',
+  path: '/roads',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminSettingsRoute = AppAdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminUsersRoute = AppAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppPetugasIndexRoute = AppPetugasIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppPetugasRoute,
+} as any)
+const AppPetugasProfileRoute = AppPetugasProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppPetugasRoute,
 } as any)
 const AppAdminReportsIndexRoute = AppAdminReportsIndexRouteImport.update({
   id: '/',
@@ -267,18 +267,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/tentang': {
-      id: '/tentang'
-      path: '/tentang'
-      fullPath: '/tentang'
-      preLoaderRoute: typeof TentangRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/fitur': {
-      id: '/fitur'
-      path: '/fitur'
-      fullPath: '/fitur'
-      preLoaderRoute: typeof FiturRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -288,32 +281,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/fitur': {
+      id: '/fitur'
+      path: '/fitur'
+      fullPath: '/fitur'
+      preLoaderRoute: typeof FiturRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/signup': {
-      id: '/auth/signup'
-      path: '/auth/signup'
-      fullPath: '/auth/signup'
-      preLoaderRoute: typeof AuthSignupRouteImport
+    '/tentang': {
+      id: '/tentang'
+      path: '/tentang'
+      fullPath: '/tentang'
+      preLoaderRoute: typeof TentangRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/login': {
-      id: '/auth/login'
-      path: '/auth/login'
-      fullPath: '/auth/login'
-      preLoaderRoute: typeof AuthLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_app/warga': {
-      id: '/_app/warga'
-      path: '/warga'
-      fullPath: '/warga'
-      preLoaderRoute: typeof AppWargaRouteImport
+    '/_app/admin': {
+      id: '/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/petugas': {
@@ -323,19 +309,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPetugasRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/admin': {
-      id: '/_app/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AppAdminRouteImport
+    '/_app/warga': {
+      id: '/_app/warga'
+      path: '/warga'
+      fullPath: '/warga'
+      preLoaderRoute: typeof AppWargaRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/petugas/': {
-      id: '/_app/petugas/'
-      path: '/'
-      fullPath: '/petugas/'
-      preLoaderRoute: typeof AppPetugasIndexRouteImport
-      parentRoute: typeof AppPetugasRoute
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/signup': {
+      id: '/auth/signup'
+      path: '/auth/signup'
+      fullPath: '/auth/signup'
+      preLoaderRoute: typeof AuthSignupRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_app/admin/': {
       id: '/_app/admin/'
@@ -344,39 +337,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminIndexRouteImport
       parentRoute: typeof AppAdminRoute
     }
-    '/_app/petugas/profile': {
-      id: '/_app/petugas/profile'
-      path: '/profile'
-      fullPath: '/petugas/profile'
-      preLoaderRoute: typeof AppPetugasProfileRouteImport
-      parentRoute: typeof AppPetugasRoute
-    }
-    '/_app/admin/users': {
-      id: '/_app/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AppAdminUsersRouteImport
-      parentRoute: typeof AppAdminRoute
-    }
-    '/_app/admin/settings': {
-      id: '/_app/admin/settings'
-      path: '/settings'
-      fullPath: '/admin/settings'
-      preLoaderRoute: typeof AppAdminSettingsRouteImport
-      parentRoute: typeof AppAdminRoute
-    }
-    '/_app/admin/roads': {
-      id: '/_app/admin/roads'
-      path: '/roads'
-      fullPath: '/admin/roads'
-      preLoaderRoute: typeof AppAdminRoadsRouteImport
-      parentRoute: typeof AppAdminRoute
-    }
-    '/_app/admin/reports': {
-      id: '/_app/admin/reports'
-      path: '/reports'
-      fullPath: '/admin/reports'
-      preLoaderRoute: typeof AppAdminReportsRouteImport
+    '/_app/admin/petugas': {
+      id: '/_app/admin/petugas'
+      path: '/petugas'
+      fullPath: '/admin/petugas'
+      preLoaderRoute: typeof AppAdminPetugasRouteImport
       parentRoute: typeof AppAdminRoute
     }
     '/_app/admin/profile': {
@@ -386,12 +351,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminProfileRouteImport
       parentRoute: typeof AppAdminRoute
     }
-    '/_app/admin/petugas': {
-      id: '/_app/admin/petugas'
-      path: '/petugas'
-      fullPath: '/admin/petugas'
-      preLoaderRoute: typeof AppAdminPetugasRouteImport
+    '/_app/admin/reports': {
+      id: '/_app/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AppAdminReportsRouteImport
       parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/roads': {
+      id: '/_app/admin/roads'
+      path: '/roads'
+      fullPath: '/admin/roads'
+      preLoaderRoute: typeof AppAdminRoadsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/settings': {
+      id: '/_app/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AppAdminSettingsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/users': {
+      id: '/_app/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AppAdminUsersRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/petugas/': {
+      id: '/_app/petugas/'
+      path: '/'
+      fullPath: '/petugas/'
+      preLoaderRoute: typeof AppPetugasIndexRouteImport
+      parentRoute: typeof AppPetugasRoute
+    }
+    '/_app/petugas/profile': {
+      id: '/_app/petugas/profile'
+      path: '/profile'
+      fullPath: '/petugas/profile'
+      preLoaderRoute: typeof AppPetugasProfileRouteImport
+      parentRoute: typeof AppPetugasRoute
     }
     '/_app/admin/reports/': {
       id: '/_app/admin/reports/'

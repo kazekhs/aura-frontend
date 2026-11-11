@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import {
-  Camera, MapPin, FileText, Plus, ListChecks,
-  Loader2, Crosshair, ShieldAlert, Clock, Users,
+  Camera, MapPin, Loader2, Crosshair, ShieldAlert, Clock,
+  Wifi, ArrowRight, ArrowLeft, Check, Lightbulb, Radio, Send,
 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -10,15 +10,12 @@ import { formatDistanceToNow } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import {
   CATEGORY_LABEL, CATEGORY_ICON,
   STATUS_LABEL, STATUS_TONE,
@@ -29,7 +26,6 @@ export const Route = createFileRoute("/_app/warga")({
   head: () => ({ meta: [{ title: "Lapor Kerusakan" }] }),
   component: WargaPage,
 });
-
 
 const reportSchema = z.object({
   category: z.enum(["jalan_berlubang", "pju_mati"]),
@@ -42,13 +38,6 @@ const reportSchema = z.object({
   phone: z.string().trim().min(8, "Nomor HP wajib diisi minimal 8 karakter").max(20),
 });
 
-// ──────────────────────────────────────────────────────────
-// Cara pakai ip-api.com:
-//   GET http://ip-api.com/json/?fields=query,status
-//   → { "status": "success", "query": "114.10.52.133" }
-//   field "query" = IP publik pengguna saat ini
-//   PENTING: versi gratis hanya HTTP (bukan HTTPS)
-//   Jika website pakai HTTPS di production, browser akan
 async function fetchPublicIp(): Promise<string | null> {
   // Bypass untuk local development: agar tidak error karena AdBlock/CORS di localhost
   if (import.meta.env.DEV) {
@@ -79,24 +68,24 @@ async function fetchPublicIp(): Promise<string | null> {
 async function fetchOSMPlaces(lat: number, lng: number): Promise<string[]> {
   // Query Overpass API untuk mencari amenity (fasilitas umum), bangunan penting, dan landuse pemukiman dalam radius 300m
   const query = `[out:json][timeout:15];(node(around:300,${lat},${lng})["amenity"];way(around:300,${lat},${lng})["amenity"];node(around:300,${lat},${lng})["building"~"school|hospital|residential|apartments|house"];way(around:300,${lat},${lng})["building"~"school|hospital|residential|apartments|house"];way(around:300,${lat},${lng})["landuse"~"residential"];relation(around:300,${lat},${lng})["landuse"~"residential"];);out tags center;`;
-  
+
   try {
     const response = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
     if (!response.ok) throw new Error("OSM Overpass query failed");
-    
+
     const data = await response.json();
     const places: string[] = [];
-    
+
     if (data.elements && Array.isArray(data.elements)) {
       for (const element of data.elements) {
         const tags = element.tags;
         if (!tags) continue;
-        
+
         const name = tags.name;
         const amenity = tags.amenity;
         const building = tags.building;
         const landuse = tags.landuse;
-        
+
         // Gunakan nama tempat jika ada, fallback ke tipe tempat
         if (name) {
           places.push(name);
@@ -109,7 +98,7 @@ async function fetchOSMPlaces(lat: number, lng: number): Promise<string[]> {
         }
       }
     }
-    
+
     return Array.from(new Set(places)).filter(Boolean);
   } catch (err) {
     console.error("Gagal mengambil data dari OSM Overpass:", err);
@@ -134,23 +123,34 @@ interface MyReport {
   longitude: number;
 }
 
+const QUOTA = 5;
+
+type QuotaInfo = {
+  ipStatus: "loading" | "ok" | "blocked" | "error";
+  remaining: number;
+};
+
 function WargaPage() {
+  const [quota, setQuota] = useState<QuotaInfo>({ ipStatus: "loading", remaining: QUOTA });
+
   return (
     <div className="flex min-h-screen flex-col bg-sage-soft dark:bg-background">
       <SiteHeader />
       <main className="flex-1">
-        <section className="mx-auto max-w-[1200px] px-4 pb-4 pt-28 md:pt-36">
-          <span className="inline-flex rounded-full bg-sage px-4 py-1.5 text-[13px] font-semibold text-forest">Tanpa akun · Maks. 5 laporan per hari</span>
-          <h1 className="mt-4 text-3xl font-extrabold text-forest md:text-5xl dark:text-foreground">
+        <section className="mx-auto max-w-[1200px] px-4 pb-4 pt-10 md:pt-14">
+          <h1 className="text-3xl font-extrabold text-forest md:text-5xl dark:text-foreground">
             Lapor Kerusakan Infrastruktur
           </h1>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Foto kerusakan, ambil lokasi, lalu kirim. Laporanmu langsung dianalisis dan diteruskan ke petugas dinas.
+            Isi tiga langkah singkat berikut agar laporan Anda dapat segera diverifikasi dan ditindaklanjuti petugas.
           </p>
         </section>
+
         <section className="mx-auto grid max-w-[1200px] items-start gap-6 px-4 pb-14 pt-4 lg:grid-cols-[1.25fr_1fr]">
-          <ReportForm />
-          <div className="lg:sticky lg:top-28">
+          <ReportForm onQuotaChange={setQuota} />
+          <div className="flex flex-col gap-5 lg:sticky lg:top-28">
+            <QuotaCard quota={quota} />
+            <TipsCard />
             <RecentReportsList />
           </div>
         </section>
@@ -160,7 +160,64 @@ function WargaPage() {
   );
 }
 
-function ReportForm() {
+// ── Kartu kuota (kolom kanan) ───────────────────────────────
+function QuotaCard({ quota }: { quota: QuotaInfo }) {
+  const C = 2 * Math.PI * 34;
+  const ratio = Math.min(1, Math.max(0, quota.remaining / QUOTA));
+  return (
+    <div className="flex items-center gap-5 rounded-[32px] bg-forest p-6 text-white">
+      <div className="relative h-24 w-24 shrink-0">
+        <svg viewBox="0 0 80 80" className="h-24 w-24 -rotate-90">
+          <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="8" />
+          <circle
+            cx="40" cy="40" r="34" fill="none" stroke="#c5e04b" strokeWidth="8" strokeLinecap="round"
+            strokeDasharray={C} strokeDashoffset={C * (1 - ratio)}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-2xl font-extrabold leading-none">
+            {quota.ipStatus === "loading" ? "…" : quota.remaining}
+          </span>
+          <span className="text-[10px] text-white/70">/ {QUOTA}</span>
+        </div>
+      </div>
+      <div>
+        <p className="text-lg font-extrabold">Kuota hari ini</p>
+        <p className="mt-1 text-sm text-white/70">Reset otomatis setiap 24 jam</p>
+      </div>
+    </div>
+  );
+}
+
+// ── Tips foto (kolom kanan) ─────────────────────────────────
+function TipsCard() {
+  const tips = ["Foto dari jarak 1–2 meter", "Pastikan cahaya cukup", "Sertakan patokan ukuran (sandal/koin)"];
+  return (
+    <div className="card-dashed p-6">
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+          <Lightbulb className="h-5 w-5" />
+        </span>
+        <h3 className="text-base font-extrabold">Tips foto yang baik</h3>
+      </div>
+      <ul className="mt-4 space-y-2.5">
+        {tips.map((t) => (
+          <li key={t} className="flex items-center gap-2.5 text-sm text-muted-foreground">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-forest text-primary">
+              <Check className="h-3 w-3" />
+            </span>
+            {t}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+const STEPS = ["Data pelapor", "Lokasi dan foto", "Detail"];
+
+function ReportForm({ onQuotaChange }: { onQuotaChange: (q: QuotaInfo) => void }) {
+  const [step, setStep] = useState(1);
   const [category, setCategory] = useState<keyof typeof CATEGORY_LABEL>("jalan_berlubang");
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
@@ -173,13 +230,18 @@ function ReportForm() {
   const [locating, setLocating] = useState(false);
   const [ipStatus, setIpStatus] = useState<"loading" | "ok" | "blocked" | "error">("loading");
   const [userIp, setUserIp] = useState<string | null>(null);
-  const [remainingReports, setRemainingReports] = useState(5);
+  const [remainingReports, setRemainingReports] = useState(QUOTA);
   const ipFetched = useRef(false);
   const [activeCategories, setActiveCategories] = useState<{
     jalan_berlubang: boolean;
   }>({
     jalan_berlubang: true,
   });
+
+  // Kabari parent (kartu kuota) tiap status berubah
+  useEffect(() => {
+    onQuotaChange({ ipStatus, remaining: remainingReports });
+  }, [ipStatus, remainingReports, onQuotaChange]);
 
   // Ambil pengaturan kategori aktif dari Admin settings
   useEffect(() => {
@@ -216,7 +278,7 @@ function ReportForm() {
       // DEV MODE: bypass IP fetch & RPC check agar bisa ditest tanpa migration SQL
       if (import.meta.env.DEV) {
         setUserIp("dev-mode");
-        setRemainingReports(5);
+        setRemainingReports(QUOTA);
         setIpStatus("ok");
         return;
       }
@@ -227,18 +289,17 @@ function ReportForm() {
       setUserIp(ip);
 
       // 2. Panggil Supabase RPC: hitung laporan dari IP ini dalam 24 jam terakhir
-      //    Fungsi ini kita buat di migration SQL: count_reports_by_ip(_ip TEXT) → INTEGER
       const { data, error } = await supabase.rpc("count_reports_by_ip", { _ip: ip });
-      if (error) { 
+      if (error) {
         console.error("Supabase RPC Error:", error);
-        setIpStatus("error"); 
-        return; 
+        setIpStatus("error");
+        return;
       }
 
       const count = (data as number) ?? 0;
-      const remaining = Math.max(0, 5 - count);
+      const remaining = Math.max(0, QUOTA - count);
       setRemainingReports(remaining);
-      setIpStatus(count >= 5 ? "blocked" : "ok");
+      setIpStatus(count >= QUOTA ? "blocked" : "ok");
     })();
   }, []);
 
@@ -256,17 +317,31 @@ function ReportForm() {
     );
   };
 
-  const mapUrgencyToKey = (val: string): "low" | "medium" | "high" | "critical" => {
-    const norm = (val || "").toLowerCase();
-    if (norm.includes("kecil") || norm.includes("ringan") || norm.includes("low")) return "low";
-    if (norm.includes("sedang") || norm.includes("medium")) return "medium";
-    if (norm.includes("tinggi") || norm.includes("berat") || norm.includes("high") || norm.includes("parah")) return "high";
-    if (norm.includes("kritis") || norm.includes("critical") || norm.includes("sangat parah")) return "critical";
-    return "medium";
+  // Validasi per langkah sebelum lanjut
+  const validateStep = (s: number): boolean => {
+    if (s === 1) {
+      const r = reportSchema.pick({ name: true, email: true, phone: true }).safeParse({ name, email, phone });
+      if (!r.success) { toast.error(r.error.issues[0].message); return false; }
+    }
+    if (s === 2) {
+      if (!coords) { toast.error("Ambil lokasi GPS terlebih dahulu"); return false; }
+      const r = reportSchema.pick({ address: true }).safeParse({ address });
+      if (!r.success) { toast.error(r.error.issues[0].message); return false; }
+      if (!photo) { toast.error("Foto bukti kerusakan wajib dilampirkan"); return false; }
+    }
+    return true;
+  };
+
+  const goNext = () => {
+    if (!validateStep(step)) return;
+    setStep((s) => Math.min(3, s + 1));
   };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Enter di langkah 1/2 = lanjut, bukan kirim
+    if (step < 3) { goNext(); return; }
 
     if (ipStatus === "blocked") { toast.error("Batas harian tercapai. Coba lagi besok."); return; }
     if (!userIp) { toast.error("IP tidak terdeteksi. Refresh halaman dan coba lagi."); return; }
@@ -279,11 +354,16 @@ function ReportForm() {
     });
     if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
 
+    if (!photo) {
+      toast.error("Foto bukti kerusakan wajib dilampirkan");
+      return;
+    }
+
     setSubmitting(true);
 
     // Double-check cooldown di detik terakhir (security layer ke-2)
     const { data: freshCount } = await supabase.rpc("count_reports_by_ip", { _ip: userIp });
-    if (((freshCount as number) ?? 0) >= 5) {
+    if (((freshCount as number) ?? 0) >= QUOTA) {
       setSubmitting(false);
       setIpStatus("blocked");
       setRemainingReports(0);
@@ -292,10 +372,6 @@ function ReportForm() {
     }
 
     // Upload foto (wajib) – simpan di folder 'anon'
-    if (!photo) {
-      toast.error("Foto bukti kerusakan wajib dilampirkan");
-      return;
-    }
     const ext = photo.name.split(".").pop() ?? "jpg";
     const photoPath = `anon/${Date.now()}.${ext}`;
     const { error: upErr } = await supabase.storage.from("reports").upload(photoPath, photo, {
@@ -381,21 +457,21 @@ function ReportForm() {
     // Tentukan tingkat urgensi berdasarkan fasilitas sekitar (OSM)
     const hasCritical = combinedFasilitas.some((place: string) => {
       const norm = place.toLowerCase();
-      return norm.includes("sekolah") || norm.includes("school") || 
-             norm.includes("sd") || norm.includes("smp") || 
-             norm.includes("sma") || norm.includes("smk") || 
+      return norm.includes("sekolah") || norm.includes("school") ||
+             norm.includes("sd") || norm.includes("smp") ||
+             norm.includes("sma") || norm.includes("smk") ||
              norm.includes("madrasah") || norm.includes("tk") ||
-             norm.includes("rumah sakit") || norm.includes("hospital") || 
-             norm.includes("klinik") || norm.includes("clinic") || 
+             norm.includes("rumah sakit") || norm.includes("hospital") ||
+             norm.includes("klinik") || norm.includes("clinic") ||
              norm.includes("puskesmas") || norm.includes("apotek");
     });
 
     const hasMedium = combinedFasilitas.some((place: string) => {
       const norm = place.toLowerCase();
-      return norm.includes("pemukiman") || norm.includes("residential") || 
-             norm.includes("perumahan") || norm.includes("apartmen") || 
-             norm.includes("kampung") || norm.includes("residence") || 
-             norm.includes("house") || norm.includes("griya") || 
+      return norm.includes("pemukiman") || norm.includes("residential") ||
+             norm.includes("perumahan") || norm.includes("apartmen") ||
+             norm.includes("kampung") || norm.includes("residence") ||
+             norm.includes("house") || norm.includes("griya") ||
              norm.includes("kost") || norm.includes("warga");
     });
 
@@ -516,6 +592,7 @@ function ReportForm() {
     toast.success("Laporan berhasil dikirim dan dianalisis oleh AI!");
     setDescription(""); setAddress(""); setPhoto(null); setCoords(null);
     setName(""); setEmail(""); setPhone("");
+    setStep(1);
 
     const newRemaining = Math.max(0, remainingReports - 1);
     setRemainingReports(newRemaining);
@@ -524,151 +601,239 @@ function ReportForm() {
 
   const formDisabled = ipStatus === "blocked" || ipStatus === "loading";
 
-  const IpBanner = () => {
+  const ipBanner = (() => {
     if (ipStatus === "loading") return (
-      <div className="flex items-center gap-2 rounded-2xl border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+      <div className="flex items-center gap-2 rounded-full bg-sage px-5 py-3 text-sm text-forest">
+        <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
         <span>Mendeteksi perangkat Anda…</span>
       </div>
     );
     if (ipStatus === "error") return (
-      <div className="flex items-center gap-2 rounded-2xl border border-warning/40 bg-warning/15 px-4 py-3 text-sm text-warning-foreground">
+      <div className="flex items-center gap-2 rounded-3xl border border-warning/40 bg-warning/15 px-5 py-3 text-sm text-warning-foreground">
         <ShieldAlert className="h-4 w-4 shrink-0" />
         <span>Tidak dapat mendeteksi jaringan. Pastikan internet aktif lalu refresh halaman.</span>
       </div>
     );
     if (ipStatus === "blocked") return (
-      <div className="flex items-center gap-2 rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+      <div className="flex items-center gap-2 rounded-3xl border border-destructive/30 bg-destructive/10 px-5 py-3 text-sm text-destructive">
         <Clock className="h-4 w-4 shrink-0" />
         <div>
           <p className="font-medium">Batas harian tercapai</p>
-          <p className="text-xs opacity-80 mt-0.5">
-            Anda sudah mengirim 5 laporan hari ini. Kuota reset otomatis setelah 24 jam.
+          <p className="mt-0.5 text-xs opacity-80">
+            Anda sudah mengirim {QUOTA} laporan hari ini. Kuota reset otomatis setelah 24 jam.
           </p>
         </div>
       </div>
     );
     return (
-      <div className="flex items-center justify-between rounded-2xl border border-success/30 bg-success/10 px-4 py-2.5 text-sm">
-        <span className="text-success text-xs">
-          IP terdeteksi: <code className="font-mono">{userIp}</code>
+      <div className="flex items-center justify-between gap-3 rounded-full bg-sage px-5 py-3 text-sm text-forest">
+        <span className="flex min-w-0 items-center gap-2 text-xs">
+          <Wifi className="h-4 w-4 shrink-0" />
+          <span className="truncate">IP terdeteksi: <code className="font-mono">{userIp}</code></span>
         </span>
-        <span className="font-semibold text-success">
-          Sisa kuota: {remainingReports}/5
-        </span>
+        <span className="shrink-0 text-xs font-extrabold">Sisa kuota: {remainingReports}/{QUOTA}</span>
       </div>
     );
-  };
+  })();
+
+  const stepTitle = [
+    "Siapa yang melapor?",
+    "Tentukan lokasi dan unggah foto",
+    "Ceritakan detail kerusakan",
+  ][step - 1];
 
   return (
-    <Card className="p-6 md:p-8">
-      <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
-          <Plus className="h-5 w-5" />
-        </span>
-        <div>
-          <h2 className="text-lg font-semibold">Buat laporan baru</h2>
-          <p className="text-xs text-muted-foreground">Tanpa akun · Maks. 5 laporan per hari per perangkat.</p>
-        </div>
-      </div>
+    <div className="rounded-[36px] bg-card p-6 shadow-soft md:p-8">
+      {ipBanner}
 
-      <div className="mt-4"><IpBanner /></div>
+      {/* Stepper */}
+      <ol className="mt-6 flex items-center" aria-label="Langkah pengisian">
+        {STEPS.map((label, i) => {
+          const n = i + 1;
+          const done = step > n;
+          const active = step === n;
+          return (
+            <li key={label} className="flex flex-1 items-center last:flex-none">
+              <div className="flex items-center gap-2.5">
+                <span
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-extrabold ${
+                    done || active ? "bg-primary text-primary-foreground" : "bg-sage text-forest/60"
+                  }`}
+                >
+                  {done ? <Check className="h-4 w-4" /> : n}
+                </span>
+                <span className={`hidden text-sm font-bold sm:inline ${active ? "text-forest dark:text-foreground" : "text-muted-foreground"}`}>
+                  {label}
+                </span>
+              </div>
+              {n < STEPS.length && (
+                <span className={`mx-3 h-0.5 flex-1 rounded-full ${done ? "bg-primary" : "bg-sage"}`} />
+              )}
+            </li>
+          );
+        })}
+      </ol>
 
-      <form onSubmit={onSubmit} className="mt-4 space-y-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="name">Nama Lengkap</Label>
-          <Input id="name" value={name} onChange={(e) => setName(e.target.value)}
-            placeholder="Masukkan nama lengkap Anda" disabled={formDisabled} required />
-        </div>
+      <h2 className="mt-7 text-xl font-extrabold text-forest dark:text-foreground">{stepTitle}</h2>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-            placeholder="nama@email.com" disabled={formDisabled} required />
-        </div>
+      <form onSubmit={onSubmit} className="mt-5 space-y-4">
+        {step === 1 && (
+          <>
+            <div className="space-y-1.5">
+              <Label htmlFor="name" className="font-bold">Nama Lengkap</Label>
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)}
+                placeholder="Masukkan nama lengkap Anda" disabled={formDisabled} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="font-bold">Email</Label>
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                placeholder="nama@email.com" disabled={formDisabled} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="phone" className="font-bold">No. HP / WhatsApp</Label>
+              <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
+                placeholder="Contoh: 08123456789" disabled={formDisabled} />
+            </div>
+          </>
+        )}
 
-        <div className="space-y-1.5">
-          <Label htmlFor="phone">No. HP / WhatsApp</Label>
-          <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
-            placeholder="Contoh: 08123456789" disabled={formDisabled} required />
-        </div>
+        {step === 2 && (
+          <>
+            <div className="space-y-1.5">
+              <Label className="font-bold">Lokasi GPS</Label>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={getLocation}
+                  disabled={locating || formDisabled}
+                  className="inline-flex h-11 items-center gap-2 rounded-full bg-forest px-5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                >
+                  {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Crosshair className="h-4 w-4 text-primary" />}
+                  {coords ? "Ulang ambil lokasi" : "Ambil lokasi sekarang"}
+                </button>
+                {coords && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-sage px-4 py-2 text-xs font-bold text-forest">
+                    <MapPin className="h-3.5 w-3.5" /> {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
+                  </span>
+                )}
+              </div>
+            </div>
 
-        <div className="space-y-1.5">
-          <Label>Kategori kerusakan</Label>
-          <Select value={category} onValueChange={(v) => setCategory(v as keyof typeof CATEGORY_LABEL)} disabled={formDisabled}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {Object.entries(CATEGORY_LABEL)
-                .filter(([k]) => activeCategories[k as keyof typeof activeCategories])
-                .map(([k, v]) => {
-                  const Icon = CATEGORY_ICON[k as keyof typeof CATEGORY_ICON];
-                  return (
-                    <SelectItem key={k} value={k}>
-                      <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-foreground" /><span>{v}</span>
-                      </div>
-                    </SelectItem>
-                  );
-                })}
-            </SelectContent>
-          </Select>
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="address" className="font-bold">Alamat Lengkap</Label>
+              <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)}
+                placeholder="Patokan / nama jalan" disabled={formDisabled} />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="desc">Detail Laporan</Label>
-          <Textarea id="desc" value={description} onChange={(e) => setDescription(e.target.value)}
-            placeholder="Jelaskan detail kondisi, ukuran, dan dampak kerusakan…" rows={3} disabled={formDisabled} required />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="photo" className="font-bold">Foto Kerusakan</Label>
+              <label
+                htmlFor="photo"
+                className="flex cursor-pointer flex-col items-center gap-1.5 rounded-[28px] border-[1.5px] border-dashed border-forest-soft/40 bg-field px-5 py-8 text-center transition-colors hover:border-forest-soft"
+              >
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <Camera className="h-5 w-5" />
+                </span>
+                <span className="mt-1 text-sm font-bold text-forest dark:text-foreground">
+                  {photo ? photo.name : "Pilih foto (Wajib)"}
+                </span>
+                <span className="text-xs text-muted-foreground">JPG/PNG maks 5MB</span>
+              </label>
+              <input id="photo" type="file" accept="image/*" capture="environment" className="sr-only"
+                onChange={(e) => {
+                  const f = e.target.files?.[0] ?? null;
+                  if (f && f.size > 5 * 1024 * 1024) { toast.error("Ukuran foto maksimal 5MB"); return; }
+                  setPhoto(f);
+                }}
+                disabled={formDisabled} />
+            </div>
+          </>
+        )}
 
-        <div className="space-y-1.5">
-          <Label htmlFor="address">Alamat Lengkap</Label>
-          <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)}
-            placeholder="Patokan / nama jalan" disabled={formDisabled} required />
-        </div>
+        {step === 3 && (
+          <>
+            <div className="space-y-1.5">
+              <Label className="font-bold">Kategori kerusakan</Label>
+              <Select value={category} onValueChange={(v) => setCategory(v as keyof typeof CATEGORY_LABEL)} disabled={formDisabled}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CATEGORY_LABEL)
+                    .filter(([k]) => activeCategories[k as keyof typeof activeCategories])
+                    .map(([k, v]) => {
+                      const Icon = CATEGORY_ICON[k as keyof typeof CATEGORY_ICON];
+                      return (
+                        <SelectItem key={k} value={k}>
+                          <div className="flex items-center gap-2">
+                            <Icon className="h-4 w-4 text-foreground" /><span>{v}</span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div className="space-y-1.5">
-          <Label>Lokasi GPS</Label>
-          <div className="flex flex-wrap items-center gap-3">
-            <Button type="button" variant="outline" onClick={getLocation}
-              disabled={locating || formDisabled}>
-              {locating
-                ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                : <Crosshair className="mr-2 h-4 w-4" />}
-              {coords ? "Ulang ambil lokasi" : "Ambil lokasi sekarang"}
-            </Button>
-            {coords && (
-              <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3" /> {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
+            <div className="space-y-1.5">
+              <Label htmlFor="desc" className="font-bold">Detail Laporan</Label>
+              <Textarea id="desc" value={description} onChange={(e) => setDescription(e.target.value)}
+                placeholder="Jelaskan detail kondisi, ukuran, dan dampak kerusakan…" rows={5} disabled={formDisabled} />
+            </div>
+          </>
+        )}
+
+        {/* Navigasi langkah */}
+        <div className="flex items-center justify-between gap-3 pt-2">
+          {step > 1 ? (
+            <button
+              type="button"
+              onClick={() => setStep((s) => s - 1)}
+              className="inline-flex h-12 items-center gap-2 rounded-full border-[1.5px] border-forest px-6 text-sm font-bold text-forest transition-colors hover:bg-sage dark:border-foreground dark:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" /> Kembali
+            </button>
+          ) : <span />}
+
+          {step < 3 ? (
+            <button
+              type="button"
+              onClick={goNext}
+              disabled={formDisabled}
+              className="inline-flex h-12 items-center gap-3 rounded-full bg-primary pl-7 pr-1.5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+            >
+              Lanjut
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-forest text-primary">
+                <ArrowRight className="h-4 w-4" />
               </span>
-            )}
-          </div>
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={submitting || formDisabled || ipStatus === "error"}
+              className="inline-flex h-12 items-center gap-3 rounded-full bg-primary pl-7 pr-1.5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+            >
+              {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Mengirim…</> : "Kirim laporan"}
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-forest text-primary">
+                <Send className="h-4 w-4" />
+              </span>
+            </button>
+          )}
         </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="photo">Foto Bukti Kerusakan</Label>
-          <div className="flex items-center gap-3">
-            <label htmlFor="photo"
-              className="flex w-full cursor-pointer items-center gap-2 rounded-3xl border border-dashed border-input bg-field px-5 py-4 text-sm font-medium text-muted-foreground hover:border-forest-soft">
-              <Camera className="h-4 w-4" /> {photo ? photo.name : "Pilih foto (Wajib)"}
-            </label>
-            <input id="photo" type="file" accept="image/*" capture="environment" className="sr-only"
-              onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} disabled={formDisabled} required />
-          </div>
-        </div>
-
-        <Button type="submit"
-          disabled={submitting || formDisabled || ipStatus === "error"}
-          size="lg" className="w-full">
-          {submitting
-            ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Mengirim…</>
-            : <><FileText className="mr-2 h-4 w-4" /> Kirim laporan</>}
-        </Button>
       </form>
-    </Card>
+    </div>
   );
 }
 
 // ── Daftar laporan terbaru (semua, bukan per user) ─────────
+const maskPhone = (p: string) => (p && p.length > 7 ? `${p.slice(0, 4)}****${p.slice(-3)}` : p);
+const shortName = (n: string) => {
+  const parts = (n || "").trim().split(/\s+/);
+  return parts.length > 1 ? `${parts[0]} ${parts[parts.length - 1][0].toUpperCase()}.` : parts[0] || "Warga";
+};
+const pillDot: Record<string, string> = {
+  pending: "bg-warning", progress: "bg-info", in_progress: "bg-info", resolved: "bg-success", selesai: "bg-success",
+  low: "bg-success", ringan: "bg-success", medium: "bg-warning", high: "bg-orange", critical: "bg-destructive",
+};
+
 function RecentReportsList() {
   const [reports, setReports] = useState<MyReport[] | null>(null);
 
@@ -690,53 +855,60 @@ function RecentReportsList() {
   }, []);
 
   return (
-    <Card className="p-6 md:p-8">
-      <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-foreground">
-          <ListChecks className="h-5 w-5" />
+    <div className="rounded-[32px] bg-card p-6 shadow-soft">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-lg font-extrabold text-forest dark:text-foreground">Laporan terbaru</h2>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-sage px-3 py-1 text-xs font-bold text-forest">
+          <Radio className="h-3 w-3" /> Realtime
         </span>
-        <div>
-          <h2 className="text-lg font-semibold">Laporan terbaru</h2>
-          <p className="text-xs text-muted-foreground">{reports?.length ?? 0} laporan termuat</p>
-        </div>
       </div>
-      <div className="mt-4 max-h-[640px] space-y-3 overflow-y-auto pr-1 lg:max-h-[calc(100vh-16rem)]">
+
+      <div className="mt-4 min-h-[12rem] space-y-3 overflow-y-auto overscroll-contain pr-1 lg:max-h-[calc(100vh-44rem)]">
         {reports === null && <p className="text-sm text-muted-foreground">Memuat…</p>}
         {reports?.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+          <div className="rounded-3xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
             Belum ada laporan. Jadilah yang pertama!
           </div>
         )}
-        {reports?.map((r) => (
-          <div key={r.id} className="rounded-3xl border border-border bg-card p-4 transition-shadow hover:shadow-soft">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  {(() => { const Icon = CATEGORY_ICON[r.category]; return <Icon className="h-3 w-3" />; })()}
-                  <span>{CATEGORY_LABEL[r.category]}</span>
-                  <span>·</span>
-                  <span>{formatDistanceToNow(new Date(r.created_at), { addSuffix: true, locale: idLocale })}</span>
+        {reports?.map((r) => {
+          const Icon = CATEGORY_ICON[r.category];
+          const statusKey = r.status_pelaporan;
+          const urgKey = r.kategori_pelaporan;
+          return (
+            <div key={r.id} className="rounded-3xl border border-border/70 bg-background p-4">
+              <div className="flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sage text-forest">
+                  {Icon && <Icon className="h-4 w-4" />}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-extrabold">{shortName(r.name)} · {maskPhone(r.no_hp)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatDistanceToNow(new Date(r.created_at), { addSuffix: true, locale: idLocale })}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold ${statusKey === "progress" ? STATUS_TONE.in_progress : (STATUS_TONE[statusKey as keyof typeof STATUS_TONE] || "bg-secondary text-secondary-foreground")}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${pillDot[statusKey] ?? "bg-muted-foreground"}`} />
+                  {statusKey === "progress" ? "Dikerjakan" : (STATUS_LABEL[statusKey as keyof typeof STATUS_LABEL] || statusKey)}
+                </span>
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold ${urgKey === "ringan" ? URGENCY_TONE.low : (URGENCY_TONE[urgKey as keyof typeof URGENCY_TONE] || "bg-secondary text-secondary-foreground")}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${pillDot[urgKey] ?? "bg-muted-foreground"}`} />
+                  {urgKey === "ringan" ? "Ringan" : (URGENCY_LABEL[urgKey as keyof typeof URGENCY_LABEL] || urgKey)}
+                </span>
+              </div>
+
+              <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{r.detail_laporan}</p>
+              {r.address && (
+                <p className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
+                  <MapPin className="h-3 w-3 shrink-0" /> <span className="truncate">{r.address}</span>
                 </p>
-                <p className="mt-0.5 truncate font-medium">{r.name} - {r.no_hp}</p>
-              </div>
-              <div className="flex shrink-0 flex-col items-end gap-1">
-                <Badge variant="outline" className={r.status_pelaporan === 'progress' ? STATUS_TONE.in_progress : (STATUS_TONE[r.status_pelaporan as keyof typeof STATUS_TONE] || 'bg-secondary text-secondary-foreground')}>
-                  {r.status_pelaporan === 'progress' ? 'Dikerjakan' : (STATUS_LABEL[r.status_pelaporan as keyof typeof STATUS_LABEL] || r.status_pelaporan)}
-                </Badge>
-                <Badge variant="outline" className={r.kategori_pelaporan === 'ringan' ? URGENCY_TONE.low : (URGENCY_TONE[r.kategori_pelaporan as keyof typeof URGENCY_TONE] || 'bg-secondary text-secondary-foreground')}>
-                  {r.kategori_pelaporan === 'ringan' ? 'Ringan' : (URGENCY_LABEL[r.kategori_pelaporan as keyof typeof URGENCY_LABEL] || r.kategori_pelaporan)}
-                </Badge>
-              </div>
+              )}
             </div>
-            <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{r.detail_laporan}</p>
-            {r.address && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                <MapPin className="mr-1 inline h-3 w-3" />{r.address}
-              </p>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
-    </Card>
+    </div>
   );
 }

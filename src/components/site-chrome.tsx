@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, LogOut, MapPin, Menu, X } from "lucide-react";
+import { ArrowRight, LogOut, Leaf, MapPin, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useAuth, ROLE_HOME, ROLE_LABEL } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ export function Logo({ dark = false }: { dark?: boolean }) {
   return (
     <span className="flex items-center gap-2">
       <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
-        <MapPin className="h-5 w-5" />
+        <Leaf className="h-5 w-5" />
       </span>
       <span className={`text-lg font-extrabold tracking-tight ${dark ? "text-white" : "text-forest dark:text-foreground"}`}>
         AURA
