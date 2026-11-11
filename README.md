@@ -1,45 +1,5 @@
-# AURA — Ekosistem Tata Kota Cerdas (Full-Stack App / FS)
 
-AURA adalah platform tata kota cerdas yang menghubungkan warga dengan petugas dinas untuk penanganan infrastruktur publik secara cepat, transparan, dan berbasis data spasial. Platform ini mempermudah warga untuk melaporkan kerusakan jalan berlubang dengan 3 kategori urgensi yaitu: ringan, sedang, dan kritis yang kemudian diidentifikasi menggunakan model AI (Computer Vision) dan dipetakan ke dalam dashboard GIS Admin untuk penugasan petugas dinas secara real-time.
-
----
-
-> [!NOTE]
-> Ini adalah dokumentasi khusus untuk folder **FS (Full-Stack Web Application)**
-
----
-
-## Tech Stack dan Fitur Utama
-
-- **Core**: React 19 & TypeScript
-- **Framework & Router**: TanStack Start (Full-stack framework berbasis Vite & TanStack Router)
-- **Database & Auth**: Supabase (REST APIs, PostgreSQL, Real-time Spasial)
-- **Styling**: Tailwind CSS v4 dengan skema Marka Jalan (aspal, kuning marka, beton)
-- **Map & GIS**: Leaflet & MapLibre GL (Peta interaktif 3D spasial)
-- **Deployment**: Cloudflare Workers / Pages
-
----
-
-## Panduan Setup dan Menjalankan secara Lokal
-
-### Prerequisites (Prasyarat)
-
-Pastikan perangkat lokal Anda sudah terinstall:
-- Node.js (versi 18+) atau Bun (Sangat direkomendasikan karena file lock yang digunakan di repositori ini adalah `bun.lockb`).
-- Akun Supabase untuk database lokal / testing.
-
----
-
-### Langkah-Langkah Instalasi
-
-#### 1. Clone Repositori
-Silakan clone repositori ini ke folder lokal Anda:
-```bash
-git clone https://github.com/Zidfar/AURA.git
-cd aura
-```
-
-#### 2. Install Dependencies
+#### Install Dependencies
 Gunakan Bun (rekomendasi) atau npm untuk menginstall seluruh dependensi package:
 ```bash
 # Menggunakan Bun (Rekomendasi)
@@ -49,7 +9,7 @@ bun install
 npm install
 ```
 
-#### 3. Setup Environment Variables
+#### Setup Environment Variables
 Buat file bernama `.env` pada root directory project dan salin variabel berikut. Sesuaikan dengan Supabase project Anda sendiri:
 ```env
 SUPABASE_PUBLISHABLE_KEY="your-supabase-anon-key"
@@ -59,7 +19,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY="your-supabase-anon-key"
 VITE_SUPABASE_URL="https://your-supabase-project-id.supabase.co"
 ```
 
-#### 4. Jalankan Aplikasi secara Lokal (Development Mode)
+#### Jalankan Aplikasi secara Lokal (Development Mode)
 Jalankan dev server lokal untuk memulai proses koding:
 ```bash
 # Menggunakan Bun (Rekomendasi)
@@ -84,15 +44,8 @@ bun run build
 npm run build
 ```
 
-### Deploy via Wrangler (Cloudflare Workers)
-Jika Anda sudah login menggunakan Wrangler CLI (`npx wrangler login`), Anda bisa langsung mempublikasikannya ke Cloudflare:
-```bash
-npx wrangler deploy
-```
 
----
-
-## Struktur Folder Utama (FS)
+## Struktur Folder 
 
 ```text
 ├── components/          # Komponen UI Reusable (Site Header, Site Footer, dll)
@@ -112,11 +65,3 @@ npx wrangler deploy
 └── wrangler.jsonc       # Konfigurasi Cloudflare Workers/Pages
 ```
 
----
-
-## Tim Pengembang Full-Stack (FS)
-
-- **Nathania Englandia Saraswati** (Full-Stack Development / Database & Auth / Cloudflare Serverless) — [GitHub](https://github.com/yzohan)
-- **Nethania Emmanuela Rahadian** (Full-Stack Development / Main Dashboard Layout & Statistics Chart) — [GitHub](https://github.com/nethaniaemr)
-
-*Catatan: Proyek kolaborasi Lintas Path - Coding Camp 2026 didukung oleh DBS Foundation.*
